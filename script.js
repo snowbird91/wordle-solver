@@ -5,6 +5,8 @@ class WordleSolver {
         this.gameState = Array(6).fill().map(() => Array(5).fill({letter: '', state: 'empty'}));
         this.keyboardState = {};
         this.isAnalyzing = false;
+        this.focusedTile = null;
+        this.wordValidation = true;
         
         this.init();
     }
@@ -85,7 +87,7 @@ class WordleSolver {
     }
 
     setupEventListeners() {
-        // Physical keyboard input
+        // Enhanced keyboard input with arrow navigation
         document.addEventListener('keydown', (e) => this.handlePhysicalKeyboard(e));
         
         // Analyze button
@@ -105,11 +107,50 @@ class WordleSolver {
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') this.hideHelp();
         });
+        
+        // Auto-focus on game board for better UX
+        this.focusGameBoard();
+    }
+
+    focusGameBoard() {
+        const currentTile = this.getTile(this.currentRow, this.currentCol);
+        if (currentTile) {
+            currentTile.focus();
+            this.focusedTile = currentTile;
+            this.updateTileFocus();
+        }
+    }
+
+    updateTileFocus() {
+        // Remove focus styling from all tiles
+        document.querySelectorAll('.game-tile').forEach(tile => {
+            tile.classList.remove('focused');
+        });
+        
+        // Add focus styling to current tile
+        if (this.focusedTile) {
+            this.focusedTile.classList.add('focused');
+        }
     }
 
     handlePhysicalKeyboard(event) {
         const key = event.key.toUpperCase();
         
+        // Handle arrow navigation
+        if (['ARROWUP', 'ARROWDOWN', 'ARROWLEFT', 'ARROWRIGHT'].includes(key)) {
+            event.preventDefault();
+            this.handleArrowNavigation(key);
+            return;
+        }
+        
+        // Handle tab navigation
+        if (key === 'TAB') {
+            event.preventDefault();
+            this.handleTabNavigation(event.shiftKey);
+            return;
+        }
+        
+        // Existing key handling
         if (key === 'ENTER') {
             this.handleKeyPress('ENTER');
         } else if (key === 'BACKSPACE') {
@@ -119,9 +160,76 @@ class WordleSolver {
         }
     }
 
-    handleKeyPress(key) {
-        if (this.currentRow >= 6) return;
+    handleArrowNavigation(direction) {
+        let newRow = this.currentRow;
+        let newCol = this.currentCol;
+        
+        switch (direction) {
+            case 'ARROWUP':
+                newRow = Math.max(0, this.currentRow - 1);
+                break;
+            case 'ARROWDOWN':
+                newRow = Math.min(5, this.currentRow + 1);
+                break;
+            case 'ARROWLEFT':
+                if (this.currentCol > 0) {
+                    newCol = this.currentCol - 1;
+                } else if (this.currentRow > 0) {
+                    newRow = this.currentRow - 1;
+                    newCol = 4;
+                }
+                break;
+            case 'ARROWRIGHT':
+                if (this.currentCol < 4) {
+                    newCol = this.currentCol + 1;
+                } else if (this.currentRow < 5) {
+                    newRow = this.currentRow + 1;
+                    newCol = 0;
+                }
+                break;
+        }
+        
+        this.navigateToTile(newRow, newCol);
+    }
 
+    handleTabNavigation(isShift) {
+        let newRow = this.currentRow;
+        let newCol = this.currentCol;
+        
+        if (isShift) {
+            // Navigate backwards
+            if (this.currentCol > 0) {
+                newCol = this.currentCol - 1;
+            } else if (this.currentRow > 0) {
+                newRow = this.currentRow - 1;
+                newCol = 4;
+            }
+        } else {
+            // Navigate forwards
+            if (this.currentCol < 4) {
+                newCol = this.currentCol + 1;
+            } else if (this.currentRow < 5) {
+                newRow = this.currentRow + 1;
+                newCol = 0;
+            }
+        }
+        
+        this.navigateToTile(newRow, newCol);
+    }
+
+    navigateToTile(row, col) {
+        this.currentRow = row;
+        this.currentCol = col;
+        
+        const newTile = this.getTile(row, col);
+        if (newTile) {
+            this.focusedTile = newTile;
+            newTile.focus();
+            this.updateTileFocus();
+        }
+    }
+
+    handleKeyPress(key) {
         if (key === 'ENTER') {
             this.submitRow();
         } else if (key === 'BACKSPACE') {
@@ -132,47 +240,178 @@ class WordleSolver {
     }
 
     addLetter(letter) {
-        if (this.currentCol < 5) {
-            const tile = this.getTile(this.currentRow, this.currentCol);
+        if (this.currentRow >= 6) return;
+        
+        // Find the next empty tile in current row
+        let targetCol = this.currentCol;
+        if (targetCol >= 5) {
+            // Row is full, don't add more letters
+            this.showTemporaryMessage("Row is full! Press Enter to continue or Backspace to edit.");
+            return;
+        }
+        
+        const tile = this.getTile(this.currentRow, targetCol);
+        if (tile) {
             tile.textContent = letter;
-            tile.classList.add('filled');
+            tile.classList.add('filled', 'absent'); // Start with gray/absent by default
             
-            this.gameState[this.currentRow][this.currentCol] = {
+            this.gameState[this.currentRow][targetCol] = {
                 letter: letter,
-                state: 'filled'
+                state: 'absent' // Default to absent (gray) state
             };
             
-            this.currentCol++;
+            // Move to next column
+            this.currentCol = Math.min(4, targetCol + 1);
+            
+            // Add visual feedback
             this.animateTile(tile, 'pulse');
+            
+            // Update focus to next tile if not at end
+            if (this.currentCol < 5) {
+                this.navigateToTile(this.currentRow, this.currentCol);
+            }
+            
+            // Check if word is complete
+            if (this.currentCol === 5) {
+                this.validateCurrentWord();
+            }
         }
     }
 
     deleteLetter() {
-        if (this.currentCol > 0) {
-            this.currentCol--;
-            const tile = this.getTile(this.currentRow, this.currentCol);
+        if (this.currentRow >= 6) return;
+        
+        // If we're at the beginning of a row and current tile is empty, go to previous row
+        if (this.currentCol === 0) {
+            const currentTile = this.getTile(this.currentRow, 0);
+            if (currentTile && !currentTile.textContent.trim()) {
+                if (this.currentRow > 0) {
+                    this.navigateToTile(this.currentRow - 1, 4);
+                }
+                return;
+            }
+        }
+        
+        // Find the rightmost filled tile in current row
+        let targetCol = this.currentCol;
+        const currentTile = this.getTile(this.currentRow, targetCol);
+        
+        if (currentTile && currentTile.textContent.trim()) {
+            // Current tile has content, delete it
+        } else if (targetCol > 0) {
+            // Current tile is empty, go back one
+            targetCol = targetCol - 1;
+        } else {
+            // At beginning with empty tile
+            return;
+        }
+        
+        const tile = this.getTile(this.currentRow, targetCol);
+        if (tile) {
             tile.textContent = '';
             tile.className = 'game-tile';
             
-            this.gameState[this.currentRow][this.currentCol] = {
+            this.gameState[this.currentRow][targetCol] = {
                 letter: '',
                 state: 'empty'
             };
+            
+            // Update position
+            this.currentCol = targetCol;
+            this.navigateToTile(this.currentRow, this.currentCol);
+            
+            // Add visual feedback
+            this.animateTile(tile, 'fadeIn');
         }
     }
 
     submitRow() {
-        if (this.currentCol === 5) {
-            // Move to next row
-            this.currentRow++;
-            this.currentCol = 0;
-            
-            // Add animation to the completed row
-            const currentRowElement = document.querySelector(`[data-row="${this.currentRow - 1}"]`);
-            if (currentRowElement) {
-                this.animateRow(currentRowElement);
+        if (this.currentRow >= 6) return;
+        
+        // Check if row is complete
+        const currentWord = this.getCurrentWord();
+        if (currentWord.length < 5) {
+            this.showTemporaryMessage("Complete the word before submitting!");
+            return;
+        }
+        
+        // Validate word if validation is enabled
+        if (this.wordValidation && !this.isValidWord(currentWord)) {
+            this.showTemporaryMessage(`"${currentWord}" is not a valid word. Continue anyway?`);
+            // For now, allow invalid words but show warning
+        }
+        
+        // Add animation to the completed row
+        const currentRowElement = document.querySelector(`[data-row="${this.currentRow}"]`);
+        if (currentRowElement) {
+            this.animateRow(currentRowElement);
+        }
+        
+        // Move to next row
+        this.currentRow++;
+        this.currentCol = 0;
+        
+        // Focus on next row if available
+        if (this.currentRow < 6) {
+            this.navigateToTile(this.currentRow, 0);
+        } else {
+            this.showTemporaryMessage("Game completed! Click 'Analyze & Suggest' for recommendations.");
+        }
+        
+        // Update keyboard state
+        this.updateKeyboardFromGameState();
+    }
+
+    getCurrentWord() {
+        let word = '';
+        for (let col = 0; col < 5; col++) {
+            const cellData = this.gameState[this.currentRow][col];
+            if (cellData && cellData.letter) {
+                word += cellData.letter;
             }
         }
+        return word;
+    }
+
+    validateCurrentWord() {
+        const word = this.getCurrentWord();
+        if (word.length === 5) {
+            if (this.isValidWord(word)) {
+                this.showTemporaryMessage(`"${word}" - Press Enter to submit!`, 'success');
+            } else {
+                this.showTemporaryMessage(`"${word}" - Not in word list, but you can still submit`, 'warning');
+            }
+        }
+    }
+
+    isValidWord(word) {
+        // Basic validation - in a real implementation, this would check against a word list
+        // For now, just check if it's 5 letters and all letters
+        return word.length === 5 && /^[A-Z]+$/.test(word);
+    }
+
+    showTemporaryMessage(message, type = 'info') {
+        // Remove existing message
+        const existingMessage = document.querySelector('.temp-message');
+        if (existingMessage) {
+            existingMessage.remove();
+        }
+        
+        // Create new message
+        const messageEl = document.createElement('div');
+        messageEl.className = `temp-message temp-message-${type}`;
+        messageEl.textContent = message;
+        
+        // Insert after game board
+        const gameBoard = document.getElementById('gameBoard');
+        gameBoard.parentNode.insertBefore(messageEl, gameBoard.nextSibling);
+        
+        // Remove after 3 seconds
+        setTimeout(() => {
+            if (messageEl.parentNode) {
+                messageEl.remove();
+            }
+        }, 3000);
     }
 
     cycleTileState(event) {
@@ -187,9 +426,6 @@ class WordleSolver {
         let newState;
         
         switch (currentState) {
-            case 'filled':
-                newState = 'absent';
-                break;
             case 'absent':
                 newState = 'present';
                 break;
@@ -197,10 +433,13 @@ class WordleSolver {
                 newState = 'correct';
                 break;
             case 'correct':
-                newState = 'filled';
+                newState = 'absent';
+                break;
+            case 'filled':
+                newState = 'absent'; // In case there are any old 'filled' states
                 break;
             default:
-                newState = 'filled';
+                newState = 'absent';
         }
         
         this.updateTileState(tile, row, col, newState);
