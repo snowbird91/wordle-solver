@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wordle Solver</title>
+    <meta name="description" content="An interactive Wordle solver with smart word suggestions and strategy assistance.">
+    
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧩</text></svg>">
+    
+    <link rel="stylesheet" href="styles.css">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="header-content">
+                <h1 class="title">
+                    <span class="emoji">🧩</span>
+                    Wordle Solver
+                </h1>
+                <p class="subtitle">Interactive word strategy tool</p>
+            </div>
+            <div class="header-actions">
+                <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                    <span class="theme-icon">🌙</span>
+                </button>
+                <button class="help-btn" id="helpBtn" aria-label="Show help">
+                    <span>?</span>
+                </button>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <section class="game-section">
+                <div class="game-board-container">
+                    <h2 class="section-title">Enter Your Wordle Progress</h2>
+                    <div class="game-board" id="gameBoard">
+                    </div>
+                    <div class="keyboard-container" id="keyboardContainer">
+                    </div>
+                </div>
+            </section>
+
+            <section class="solver-section">
+                <div class="solver-container">
+                    <div class="solver-header">
+                        <h2 class="section-title">Suggestions</h2>
+                        <button class="analyze-btn" id="analyzeBtn">
+                            <span class="btn-icon">🔍</span>
+                            Analyze & Suggest
+                        </button>
+                    </div>
+                    
+                    <div class="suggestions-panel" id="suggestionsPanel">
+                        <div class="empty-state">
+                            <div class="empty-icon">💡</div>
+                            <h3>Ready to help!</h3>
+                            <p>Enter your Wordle progress above and click "Analyze & Suggest" to get word recommendations.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="footer">
+            <p>
+                <a href="https://github.com/snowbird91/wordle-solver" target="_blank" rel="noopener">
+                    View on GitHub
+                </a>
+            </p>
+        </footer>
+    </div>
+
+    <div class="modal-overlay" id="helpModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>How to Use Wordle Solver</h3>
+                <button class="modal-close" id="closeHelp">&times;</button>
+            </div>
+            <div class="modal-content">
+                <div class="help-step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h4>Enter Your Guesses</h4>
+                        <p>Type your Wordle guesses in the grid. Use the keyboard or type directly.</p>
+                    </div>
+                </div>
+                <div class="help-step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h4>Mark Letter States</h4>
+                        <p>Click letters to cycle through colors: Gray (not in word), Yellow (wrong position), Green (correct position).</p>
+                    </div>
+                </div>
+                <div class="help-step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h4>Get Suggestions</h4>
+                        <p>Click "Analyze & Suggest" to get word recommendations based on your progress.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

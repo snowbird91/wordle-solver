@@ -1,0 +1,19 @@
+theme: jekyll-theme-minimal
+title: Wordle Solver
+description: Interactive Wordle solver with word suggestions and strategy assistance
+url: https://yourusername.github.io
+baseurl: /wordle-solver
+
+author: Your Name
+twitter:
+  username: yourusername
+  card: summary_large_image
+
+plugins:
+  - jekyll-sitemap
+  - jekyll-seo-tag
+
+exclude:
+  - README.md
+  - LICENSE
+  - .gitignore
