@@ -8,6 +8,64 @@ class WordleSolver {
         this.focusedTile = null;
         this.wordValidation = true;
         
+        // Common 5-letter words for Wordle (subset for now, will expand)
+        this.wordList = [
+            'ABOUT', 'ABOVE', 'ABUSE', 'ACTOR', 'ACUTE', 'ADMIT', 'ADOPT', 'ADULT', 'AFTER', 'AGAIN',
+            'AGENT', 'AGREE', 'AHEAD', 'ALARM', 'ALBUM', 'ALERT', 'ALIEN', 'ALIGN', 'ALIKE', 'ALIVE',
+            'ALLOW', 'ALONE', 'ALONG', 'ALTER', 'AMONG', 'ANGER', 'ANGLE', 'ANGRY', 'APART', 'APPLE',
+            'APPLY', 'ARENA', 'ARGUE', 'ARISE', 'ARRAY', 'ASIDE', 'ASSET', 'AVOID', 'AWAKE', 'AWARD',
+            'AWARE', 'BADLY', 'BAKER', 'BASES', 'BASIC', 'BEACH', 'BEGAN', 'BEGIN', 'BEING', 'BELOW',
+            'BENCH', 'BILLY', 'BIRTH', 'BLACK', 'BLAME', 'BLANK', 'BLAST', 'BLIND', 'BLOCK', 'BLOOD',
+            'BOARD', 'BOOST', 'BOOTH', 'BOUND', 'BRAIN', 'BRAND', 'BRASS', 'BRAVE', 'BREAD', 'BREAK',
+            'BREED', 'BRICK', 'BRIEF', 'BRING', 'BROAD', 'BROKE', 'BROWN', 'BUILD', 'BUILT', 'BUYER',
+            'CABLE', 'CALIF', 'CARRY', 'CATCH', 'CAUSE', 'CHAIN', 'CHAIR', 'CHAOS', 'CHARM', 'CHART',
+            'CHASE', 'CHEAP', 'CHECK', 'CHEST', 'CHIEF', 'CHILD', 'CHINA', 'CHOSE', 'CIVIL', 'CLAIM',
+            'CLASS', 'CLEAN', 'CLEAR', 'CLICK', 'CLIMB', 'CLOCK', 'CLOSE', 'CLOUD', 'COACH', 'COAST',
+            'COULD', 'COUNT', 'COURT', 'COVER', 'CRAFT', 'CRASH', 'CRAZY', 'CREAM', 'CRIME', 'CROSS',
+            'CROWD', 'CROWN', 'CRUDE', 'CURVE', 'CYCLE', 'DAILY', 'DANCE', 'DATED', 'DEALT', 'DEATH',
+            'DEBUT', 'DELAY', 'DEPTH', 'DOING', 'DOUBT', 'DOZEN', 'DRAFT', 'DRAMA', 'DRANK', 'DRAWN',
+            'DREAM', 'DRESS', 'DRILL', 'DRINK', 'DRIVE', 'DROVE', 'DYING', 'EAGER', 'EARLY', 'EARTH',
+            'EIGHT', 'ELITE', 'EMPTY', 'ENEMY', 'ENJOY', 'ENTER', 'ENTRY', 'EQUAL', 'ERROR', 'EVENT',
+            'EVERY', 'EXACT', 'EXIST', 'EXTRA', 'FAITH', 'FALSE', 'FAULT', 'FIBER', 'FIELD', 'FIFTH',
+            'FIFTY', 'FIGHT', 'FINAL', 'FIRST', 'FIXED', 'FLASH', 'FLEET', 'FLOOR', 'FLUID', 'FOCUS',
+            'FORCE', 'FORTH', 'FORTY', 'FORUM', 'FOUND', 'FRAME', 'FRANK', 'FRAUD', 'FRESH', 'FRONT',
+            'FRUIT', 'FULLY', 'FUNNY', 'GIANT', 'GIVEN', 'GLASS', 'GLOBE', 'GOING', 'GRACE', 'GRADE',
+            'GRAIN', 'GRAND', 'GRANT', 'GRASS', 'GRAVE', 'GREAT', 'GREEN', 'GROSS', 'GROUP', 'GROWN',
+            'GUARD', 'GUESS', 'GUEST', 'GUIDE', 'HAPPY', 'HARSH', 'HASTE', 'HEART', 'HEAVY', 'HENCE',
+            'HENRY', 'HORSE', 'HOTEL', 'HOUSE', 'HUMAN', 'HURRY', 'IMAGE', 'INDEX', 'INNER', 'INPUT',
+            'ISSUE', 'JAPAN', 'JIMMY', 'JOINT', 'JONES', 'JUDGE', 'KNOWN', 'LABEL', 'LARGE', 'LASER',
+            'LATER', 'LAUGH', 'LAYER', 'LEARN', 'LEASE', 'LEAST', 'LEAVE', 'LEGAL', 'LEVEL', 'LEWIS',
+            'LIGHT', 'LIMIT', 'LINKS', 'LIVES', 'LOCAL', 'LOOSE', 'LOWER', 'LUCKY', 'LUNCH', 'LYING',
+            'MAGIC', 'MAJOR', 'MAKER', 'MARCH', 'MARIA', 'MATCH', 'MAYBE', 'MAYOR', 'MEANT', 'MEDIA',
+            'METAL', 'MIGHT', 'MINOR', 'MINUS', 'MIXED', 'MODEL', 'MONEY', 'MONTH', 'MORAL', 'MOTOR',
+            'MOUNT', 'MOUSE', 'MOUTH', 'MOVED', 'MOVIE', 'MUSIC', 'NEEDS', 'NERVE', 'NEVER', 'NEWLY',
+            'NIGHT', 'NOISE', 'NORTH', 'NOTED', 'NOVEL', 'NURSE', 'OCEAN', 'OFFER', 'OFTEN', 'ORDER',
+            'OTHER', 'OUGHT', 'PAINT', 'PANEL', 'PAPER', 'PARTY', 'PEACE', 'PETER', 'PHASE', 'PHONE',
+            'PHOTO', 'PIANO', 'PIECE', 'PILOT', 'PITCH', 'PLACE', 'PLAIN', 'PLANE', 'PLANT', 'PLATE',
+            'POINT', 'POUND', 'POWER', 'PRESS', 'PRICE', 'PRIDE', 'PRIME', 'PRINT', 'PRIOR', 'PRIZE',
+            'PROOF', 'PROUD', 'PROVE', 'QUEEN', 'QUICK', 'QUIET', 'QUITE', 'RADIO', 'RAISE', 'RANGE',
+            'RAPID', 'RATIO', 'REACH', 'READY', 'REALM', 'REBEL', 'REFER', 'RELAX', 'REPAY', 'REPLY',
+            'RIGHT', 'RIVAL', 'RIVER', 'ROBIN', 'ROGER', 'ROMAN', 'ROUGH', 'ROUND', 'ROUTE', 'ROYAL',
+            'RURAL', 'SCALE', 'SCENE', 'SCOPE', 'SCORE', 'SENSE', 'SERVE', 'SETUP', 'SEVEN', 'SHALL',
+            'SHAPE', 'SHARE', 'SHARP', 'SHEET', 'SHELF', 'SHELL', 'SHIFT', 'SHINE', 'SHIRT', 'SHOCK',
+            'SHOOT', 'SHORT', 'SHOWN', 'SIDES', 'SIGHT', 'SIGNS', 'SILLY', 'SINCE', 'SIXTH', 'SIXTY',
+            'SIZED', 'SKILL', 'SLEEP', 'SLIDE', 'SMALL', 'SMART', 'SMILE', 'SMITH', 'SMOKE', 'SOLID',
+            'SOLVE', 'SORRY', 'SOUND', 'SOUTH', 'SPACE', 'SPARE', 'SPEAK', 'SPEED', 'SPEND', 'SPENT',
+            'SPLIT', 'SPOKE', 'SPORT', 'SQUAD', 'STAFF', 'STAGE', 'STAKE', 'STAND', 'START', 'STATE',
+            'STEAM', 'STEEL', 'STEEP', 'STEER', 'STICK', 'STILL', 'STOCK', 'STONE', 'STOOD', 'STORE',
+            'STORM', 'STORY', 'STRIP', 'STUCK', 'STUDY', 'STUFF', 'STYLE', 'SUGAR', 'SUITE', 'SUPER',
+            'SWEET', 'TABLE', 'TAKEN', 'TASTE', 'TAXES', 'TEACH', 'TEAMS', 'TEETH', 'TERRY', 'TEXAS',
+            'THANK', 'THEFT', 'THEIR', 'THEME', 'THERE', 'THESE', 'THICK', 'THING', 'THINK', 'THIRD',
+            'THOSE', 'THREE', 'THREW', 'THROW', 'THUMB', 'TIGER', 'TIGHT', 'TIMER', 'TIMES', 'TIRED',
+            'TITLE', 'TODAY', 'TOPIC', 'TOTAL', 'TOUCH', 'TOUGH', 'TOWER', 'TRACK', 'TRADE', 'TRAIN',
+            'TREAT', 'TREND', 'TRIAL', 'TRIBE', 'TRICK', 'TRIED', 'TRIES', 'TRUCK', 'TRULY', 'TRUNK',
+            'TRUST', 'TRUTH', 'TWICE', 'UNDER', 'UNDUE', 'UNION', 'UNITY', 'UNTIL', 'UPPER', 'UPSET',
+            'URBAN', 'USAGE', 'USUAL', 'VALUE', 'VIDEO', 'VIRUS', 'VISIT', 'VITAL', 'VOCAL', 'VOICE',
+            'WASTE', 'WATCH', 'WATER', 'WHEEL', 'WHERE', 'WHICH', 'WHILE', 'WHITE', 'WHOLE', 'WHOSE',
+            'WOMAN', 'WOMEN', 'WORLD', 'WORRY', 'WORSE', 'WORST', 'WORTH', 'WOULD', 'WRITE', 'WRONG',
+            'WROTE', 'YOUNG', 'YOUTH', 'ZERO'
+        ];
+        
         this.init();
     }
 
@@ -569,38 +627,195 @@ class WordleSolver {
         analyzeBtn.innerHTML = '<span class="btn-icon">⏳</span>Analyzing...';
         analyzeBtn.disabled = true;
         
-        // Simulate analysis (replace with actual solver logic later)
+        // Run the actual solver algorithm
         setTimeout(() => {
-            this.showSuggestions();
+            const suggestions = this.generateSuggestions();
+            this.showSuggestions(suggestions);
             
             // Reset button
             analyzeBtn.innerHTML = originalText;
             analyzeBtn.disabled = false;
             this.isAnalyzing = false;
-        }, 1500);
+        }, 500); // Reduced delay since we're doing real computation
     }
 
-    showSuggestions() {
+    generateSuggestions() {
+        // Extract game state information
+        const gameInfo = this.extractGameConstraints();
+        
+        // Filter words based on constraints
+        const validWords = this.filterWordsByConstraints(gameInfo);
+        
+        // Score remaining words
+        const scoredWords = this.scoreWords(validWords, gameInfo);
+        
+        // Return top 5 suggestions
+        return scoredWords.slice(0, 5);
+    }
+
+    extractGameConstraints() {
+        const constraints = {
+            confirmedLetters: new Map(), // position -> letter
+            presentLetters: new Set(),   // letters in word but wrong position
+            absentLetters: new Set(),    // letters not in word
+            positionExclusions: new Map() // position -> Set of excluded letters
+        };
+
+        // Analyze all entered words
+        for (let row = 0; row < this.currentRow; row++) {
+            for (let col = 0; col < 5; col++) {
+                const cellData = this.gameState[row][col];
+                if (cellData.letter) {
+                    const letter = cellData.letter;
+                    
+                    switch (cellData.state) {
+                        case 'correct':
+                            constraints.confirmedLetters.set(col, letter);
+                            break;
+                        case 'present':
+                            constraints.presentLetters.add(letter);
+                            if (!constraints.positionExclusions.has(col)) {
+                                constraints.positionExclusions.set(col, new Set());
+                            }
+                            constraints.positionExclusions.get(col).add(letter);
+                            break;
+                        case 'absent':
+                            constraints.absentLetters.add(letter);
+                            break;
+                    }
+                }
+            }
+        }
+
+        return constraints;
+    }
+
+    filterWordsByConstraints(constraints) {
+        return this.wordList.filter(word => {
+            // Check confirmed letters (green tiles)
+            for (let [pos, letter] of constraints.confirmedLetters) {
+                if (word[pos] !== letter) return false;
+            }
+
+            // Check present letters (yellow tiles) - must be in word but not in excluded positions
+            for (let letter of constraints.presentLetters) {
+                if (!word.includes(letter)) return false;
+            }
+
+            // Check position exclusions for present letters
+            for (let [pos, excludedLetters] of constraints.positionExclusions) {
+                if (excludedLetters.has(word[pos])) return false;
+            }
+
+            // Check absent letters (gray tiles)
+            for (let letter of constraints.absentLetters) {
+                // Special case: if letter is also present, only exclude it from non-confirmed positions
+                if (constraints.presentLetters.has(letter)) {
+                    // This letter exists in the word, so we can't completely exclude it
+                    continue;
+                }
+                if (word.includes(letter)) return false;
+            }
+
+            return true;
+        });
+    }
+
+    scoreWords(words, constraints) {
+        const scoredWords = words.map(word => {
+            let score = 0;
+            const reason = [];
+
+            // Base score: letter frequency in English
+            const letterFreq = {
+                'E': 12.70, 'T': 9.06, 'A': 8.17, 'O': 7.51, 'I': 6.97, 'N': 6.75,
+                'S': 6.33, 'H': 6.09, 'R': 5.99, 'D': 4.25, 'L': 4.03, 'C': 2.78,
+                'U': 2.76, 'M': 2.41, 'W': 2.36, 'F': 2.23, 'G': 2.02, 'Y': 1.97,
+                'P': 1.93, 'B': 1.29, 'V': 0.98, 'K': 0.77, 'J': 0.15, 'X': 0.15,
+                'Q': 0.10, 'Z': 0.07
+            };
+
+            for (let letter of word) {
+                score += letterFreq[letter] || 0;
+            }
+
+            // Bonus for unique letters (avoid repeated letters early in game)
+            const uniqueLetters = new Set(word).size;
+            if (uniqueLetters === 5) {
+                score += 10;
+                reason.push("all unique letters");
+            }
+
+            // Bonus for common letter positions
+            if (['S', 'C', 'B', 'T', 'P', 'A', 'F'].includes(word[0])) {
+                score += 5;
+                reason.push("common starting letter");
+            }
+
+            // Bonus for vowels in good positions
+            const vowels = ['A', 'E', 'I', 'O', 'U'];
+            if (vowels.includes(word[1]) || vowels.includes(word[2])) {
+                score += 3;
+                reason.push("good vowel placement");
+            }
+
+            // Penalty for words with uncommon letter combinations
+            if (word.includes('QU') || word.includes('XY') || word.includes('ZZ')) {
+                score -= 10;
+            }
+
+            // If we have constraints, boost words that help eliminate possibilities
+            if (constraints.absentLetters.size === 0 && constraints.presentLetters.size === 0) {
+                // First guess - prioritize information gathering
+                if (uniqueLetters === 5 && vowels.filter(v => word.includes(v)).length >= 2) {
+                    score += 15;
+                    reason.push("excellent starter word");
+                }
+            }
+
+            return {
+                word,
+                score: Math.round(score),
+                reason: reason.length > 0 ? reason.join(", ") : "solid choice based on letter frequency"
+            };
+        });
+
+        // Sort by score descending
+        return scoredWords.sort((a, b) => b.score - a.score);
+    }
+
+    showSuggestions(suggestions = null) {
         const suggestionsPanel = document.getElementById('suggestionsPanel');
         
-        // This is a placeholder - will be replaced with actual solver logic
-        const sampleSuggestions = [
-            { word: 'SLATE', probability: 95, reason: 'Best starting word with common letters' },
-            { word: 'CRANE', probability: 88, reason: 'Good vowel coverage and common consonants' },
-            { word: 'ROAST', probability: 75, reason: 'Balanced letter frequency' }
+        // Use provided suggestions or fall back to sample data
+        const displaySuggestions = suggestions || [
+            { word: 'SLATE', score: 95, reason: 'Best starting word with common letters' },
+            { word: 'CRANE', score: 88, reason: 'Good vowel coverage and common consonants' },
+            { word: 'ROAST', score: 75, reason: 'Balanced letter frequency' }
         ];
+
+        if (displaySuggestions.length === 0) {
+            suggestionsPanel.innerHTML = `
+                <div class="no-suggestions">
+                    <div class="empty-icon">🤔</div>
+                    <h3>No suggestions available</h3>
+                    <p>Based on your constraints, no words match the criteria. Please check your letter states.</p>
+                </div>
+            `;
+            return;
+        }
         
         suggestionsPanel.innerHTML = `
             <div class="suggestions-header">
                 <h3>Recommended Words</h3>
-                <p class="suggestions-subtitle">Based on your current progress</p>
+                <p class="suggestions-subtitle">Based on your current progress (${displaySuggestions.length} options found)</p>
             </div>
             <div class="suggestions-list">
-                ${sampleSuggestions.map((suggestion, index) => `
+                ${displaySuggestions.map((suggestion, index) => `
                     <div class="suggestion-item" style="animation-delay: ${index * 100}ms">
                         <div class="suggestion-word">${suggestion.word}</div>
                         <div class="suggestion-meta">
-                            <span class="suggestion-probability">${suggestion.probability}%</span>
+                            <span class="suggestion-score">${suggestion.score}%</span>
                             <span class="suggestion-reason">${suggestion.reason}</span>
                         </div>
                     </div>
@@ -681,7 +896,7 @@ class WordleSolver {
                     flex-wrap: wrap;
                 }
                 
-                .suggestion-probability {
+                .suggestion-score {
                     background: var(--success-color);
                     color: white;
                     padding: var(--spacing-xs) var(--spacing-sm);
